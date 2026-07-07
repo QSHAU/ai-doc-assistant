@@ -54,13 +54,13 @@ let AuthService = class AuthService {
         this.usersService = usersService;
         this.jwtService = jwtService;
     }
-    async register(email, password) {
+    async register(email, password, name = null) {
         const existing = await this.usersService.findByEmail(email);
         if (existing) {
             throw new common_1.ConflictException('Пользователь с таким email уже существует');
         }
         const passwordHash = await bcrypt.hash(password, 10);
-        const user = await this.usersService.create(email, passwordHash);
+        const user = await this.usersService.create(email, passwordHash, name);
         return this.signToken(user.id, user.email);
     }
     async login(email, password) {

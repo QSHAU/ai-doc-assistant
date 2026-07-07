@@ -5,6 +5,7 @@ export declare class UsersService {
     findByEmail(email: string): import("../../generated/prisma/models").Prisma__UserClient<{
         id: string;
         email: string;
+        name: string | null;
         passwordHash: string;
         createdAt: Date;
         updatedAt: Date;
@@ -14,15 +15,17 @@ export declare class UsersService {
     findById(id: string): import("../../generated/prisma/models").Prisma__UserClient<{
         id: string;
         email: string;
+        name: string | null;
         passwordHash: string;
         createdAt: Date;
         updatedAt: Date;
     } | null, null, import("@prisma/client/runtime/client").DefaultArgs, {
         omit: import("../../generated/prisma/internal/prismaNamespace").GlobalOmitConfig | undefined;
     }>;
-    create(email: string, passwordHash: string): import("../../generated/prisma/models").Prisma__UserClient<{
+    create(email: string, passwordHash: string, name: string | null): import("../../generated/prisma/models").Prisma__UserClient<{
         id: string;
         email: string;
+        name: string | null;
         passwordHash: string;
         createdAt: Date;
         updatedAt: Date;

@@ -13,7 +13,7 @@ export class AuthService {
     private usersService: UsersService,
     private jwtService: JwtService,
   ) {}
-  async register(email: string, password: string) {
+  async register(email: string, password: string, name: string | null = null) {
     // 1. Проверяем, что email ещё не занят
     const existing = await this.usersService.findByEmail(email);
     if (existing) {
@@ -24,13 +24,14 @@ export class AuthService {
     const passwordHash = await bcrypt.hash(password, 10);
 
     // 3. Создаём пользователя и выдаём ему токен
-    const user = await this.usersService.create(email, passwordHash);
+    const user = await this.usersService.create(email, passwordHash, name);
     return this.signToken(user.id, user.email);
   }
 
   async login(email: string, password: string) {
     // 1. Находим пользователя
     const user = await this.usersService.findByEmail(email);
+
     if (!user) {
       throw new UnauthorizedException('Неверный email или пароль');
     }

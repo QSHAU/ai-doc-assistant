@@ -3,7 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class UsersService {
-  // PrismaService приходит через DI — мы его не создаём руками (new ...).
+  // PrismaService приходит через DI
   constructor(private prisma: PrismaService) {}
 
   findByEmail(email: string) {
@@ -14,9 +14,9 @@ export class UsersService {
     return this.prisma.user.findUnique({ where: { id } });
   }
 
-  create(email: string, passwordHash: string) {
+  create(email: string, passwordHash: string, name: string | null) {
     return this.prisma.user.create({
-      data: { email, passwordHash },
+      data: { email, name, passwordHash },
     });
   }
 }

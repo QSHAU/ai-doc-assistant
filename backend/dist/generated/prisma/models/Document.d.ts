@@ -318,9 +318,6 @@ export type DocumentUncheckedUpdateManyWithoutUserNestedInput = {
 export type EnumDocumentStatusFieldUpdateOperationsInput = {
     set?: $Enums.DocumentStatus;
 };
-export type NullableStringFieldUpdateOperationsInput = {
-    set?: string | null;
-};
 export type DocumentCreateNestedOneWithoutChunksInput = {
     create?: Prisma.XOR<Prisma.DocumentCreateWithoutChunksInput, Prisma.DocumentUncheckedCreateWithoutChunksInput>;
     connectOrCreate?: Prisma.DocumentCreateOrConnectWithoutChunksInput;

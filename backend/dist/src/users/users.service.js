@@ -23,9 +23,9 @@ let UsersService = class UsersService {
     findById(id) {
         return this.prisma.user.findUnique({ where: { id } });
     }
-    create(email, passwordHash) {
+    create(email, passwordHash, name) {
         return this.prisma.user.create({
-            data: { email, passwordHash },
+            data: { email, name, passwordHash },
         });
     }
 };

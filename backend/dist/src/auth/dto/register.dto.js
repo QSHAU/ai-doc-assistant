@@ -13,6 +13,7 @@ exports.RegisterDto = void 0;
 const class_validator_1 = require("class-validator");
 class RegisterDto {
     email;
+    name;
     password;
 }
 exports.RegisterDto = RegisterDto;
@@ -20,6 +21,12 @@ __decorate([
     (0, class_validator_1.IsEmail)({}, { message: 'Некорректный email' }),
     __metadata("design:type", String)
 ], RegisterDto.prototype, "email", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.MinLength)(2, { message: 'Имя не должно быть короче 2 символов' }),
+    __metadata("design:type", Object)
+], RegisterDto.prototype, "name", void 0);
 __decorate([
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.MinLength)(8, { message: 'Пароль должен быть не короче 8 символов' }),
