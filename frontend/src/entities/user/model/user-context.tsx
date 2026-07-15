@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { userApi } from "../api/user-api";
 import { UserContext } from "./context";
@@ -7,6 +7,11 @@ import type { User } from "./types";
 export function UserProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  const value = useMemo(
+    () => ({ user, isLoading, setUser }),
+    [user, isLoading],
+  );
 
   // При старте приложения: если токен есть — узнаём, кто мы.
   useEffect(() => {
@@ -22,9 +27,5 @@ export function UserProvider({ children }: { children: ReactNode }) {
       .finally(() => setIsLoading(false));
   }, []);
 
-  return (
-    <UserContext.Provider value={{ user, isLoading, setUser }}>
-      {children}
-    </UserContext.Provider>
-  );
+  return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
 }

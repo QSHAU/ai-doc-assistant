@@ -52,10 +52,13 @@
 - [x] Бонус-уроки по пути: CJS vs ESM (`moduleFormat`), Prisma 7 driver adapters, чтение ошибок TS
 
 ### Фронтенд (по FSD)
-- [ ] `shared/api` — axios-клиент с подстановкой токена
-- [ ] `entities/user`, `features/auth` — FSD-слои сущности и фичи
-- [ ] `pages/login`, `pages/register` + защищённый роут
-- [ ] Проверка в браузере: регистрация → логин → защищённая страница
+- [x] `shared/api` — axios-клиент с interceptor'ом токена
+- [x] `entities/user` — тип, getMe, UserProvider/useUser (+ триада «не знаю/гость/залогинен»)
+- [x] `features/auth` — authApi, use-login/use-register/use-finish-auth, формы
+- [x] Алиас `@/`, правила импортов, публичные API слайсов
+- [x] `pages/login|register|documents` + `app`: роутер, ProtectedRoute (Outlet), logout
+- [x] Проверка в браузере 15.07.2026: полный цикл (регистрация → документы → F5 → выход → 401-ошибки) — работает ✅
+- [x] Попутные уроки: bearer-токен = предъявитель, refresh-стратегия гуглов, finally при return, await (fire-and-forget), UI-строки vs домен (null на границе), SubmitEventHandler (React 19), реактивность vs useEffect
 
 **Самопроверка (этап 2)** — пройдена 03.07.2026:
 - [x] Хеширование vs шифрование, cost factor — ✅ уверенно

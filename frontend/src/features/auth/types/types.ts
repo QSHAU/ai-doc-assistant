@@ -3,3 +3,7 @@ export interface AuthResponse {
 }
 
 export type AuthStatus = "success" | "error";
+
+export type FormProps = {
+  onSuccess: () => void;
+};

@@ -1,6 +1,6 @@
 import { Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
-import { UsersService } from "../../users/users.service";
+import { UsersService } from '../../users/users.service';
 type JwtPayload = {
     sub: string;
     email: string;
