@@ -18,6 +18,7 @@ const current_user_decorator_1 = require("../auth/decorators/current-user.decora
 const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
 let UsersController = class UsersController {
     getMe(user) {
+        console.log('[controller] из req.user получил:', user);
         return user;
     }
 };
