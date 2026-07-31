@@ -36,6 +36,7 @@ model Document {
   userId        String
   user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   filename      String
+  storedName    String
   mimeType      String
   status        DocumentStatus  @default(PENDING)
   failureReason String?
