@@ -14,7 +14,6 @@ async function bootstrap() {
   );
 
   app.enableCors(); // разрешить запросы с другого origin
-
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();

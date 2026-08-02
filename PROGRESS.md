@@ -81,10 +81,14 @@
 - [x] `DocumentsModule` + подключение в `AppModule` (мини-испытание по DI — зачёт)
 - [x] Компенсирующий откат: `catch` → `unlink` (уборка не имеет права уронить исходную ошибку)
 - [x] Проверено curl'ом 31.07.2026: 201 + JSON, файл на диске = `storedName` в БД, без токена — 401 ✅
-- [ ] `GET /documents`, `DELETE /documents/:id` (+ проверка владельца)
-- [ ] Фронт: загрузка файла + список документов со статусами
+- [x] `GET /documents` (findAll, orderBy desc), `DELETE /documents/:id` — владелец проверяется прямо в `where: { id, userId }`, обработка P2025, `safeUnlink` с Logger
+- [x] Доработки бэкенда 01.08.2026: `ParseFilePipe` (400 при отсутствии файла), `limits` в `FileInterceptor` + `MaxFileSizeValidator`, `FileTypeValidator` с `fallbackToMimetype`, `DocumentStatus` из сгенерированного клиента, `UPLOAD_DIR` из конфига в одном приватном поле, `mkdir` через `OnModuleInit`, `deleteByUser` в один запрос
+- [ ] Фронт: `entities/document` (тип + чтение списка)
+- [ ] Фронт: `features/upload-document` (FormData, multipart)
+- [ ] Фронт: `features/delete-document`
+- [ ] Фронт: страница документов — список со статусами, форма загрузки, удаление
 
-**Попутные уроки этапа 3:** `node:`-префикс встроенных модулей (`path`/`fs/promises`/`crypto`), `Buffer` · вывод типов vs аннотации, расширение литеральных типов (widening) и контекстная типизация · объектный параметр вместо 5 позиционных · `return await` внутри `try` обязателен · проглатывание ошибок (`catch` без `throw`) и законное исключение для кода уборки · `instanceof` сравнивает по ссылке на конструктор → класс берём из того же модуля, что породил объект · `unknown` в `catch` и поля `NodeJS.ErrnoException` · `curl` в PowerShell — алиас на `Invoke-WebRequest`, нужен `curl.exe`; `HTTP_PROXY` и 502 от посредника; «лог сервера молчит = запрос не дошёл» · «Unknown argument» от Prisma = устаревший сгенерированный клиент · приём «вызови ошибку намеренно и распечатай её целиком»
+**Попутные уроки этапа 3:** `node:`-префикс встроенных модулей (`path`/`fs/promises`/`crypto`), `Buffer` · вывод типов vs аннотации, расширение литеральных типов (widening) и контекстная типизация · объектный параметр вместо 5 позиционных · `return await` внутри `try` обязателен · проглатывание ошибок (`catch` без `throw`) и законное исключение для кода уборки · `instanceof` сравнивает по ссылке на конструктор → класс берём из того же модуля, что породил объект · `unknown` в `catch` и поля `NodeJS.ErrnoException` · `curl` в PowerShell — алиас на `Invoke-WebRequest`, нужен `curl.exe`; `HTTP_PROXY` и 502 от посредника; «лог сервера молчит = запрос не дошёл» · «Unknown argument» от Prisma = устаревший сгенерированный клиент · приём «вызови ошибку намеренно и распечатай её целиком» · `FileTypeValidator` проверяет **магические числа** (пакет `file-type`), а не заявленный клиентом mimetype; у plain text сигнатуры нет → нужен `fallbackToMimetype` · `limits` у multer обрывает приём на лету, `MaxFileSizeValidator` срабатывает уже после буферизации в RAM — нужны оба · `delete` в Prisma возвращает удалённую строку целиком → предварительный `findUnique` избыточен (минус запрос, минус TOCTOU-окно) · lifecycle-хук `OnModuleInit` вызывается **всегда при старте**, не лениво; аргумент за него — связность (модуль сам отвечает за свою инфраструктуру) + fail-fast · `!` (definite assignment assertion) — заглушка компилятора; `readonly` вместо неё — утверждение о поведении
 
 **Самопроверка:** как файл физически едет от `<input type="file">` до диска сервера? Почему метаданные в БД, а файл — на диске?
 

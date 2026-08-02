@@ -1,28 +1,41 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   Logger,
   NotFoundException,
+  OnModuleInit,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { randomUUID } from 'node:crypto';
 import { extname, join } from 'node:path';
-import { writeFile, unlink } from 'node:fs/promises';
+import { writeFile, unlink, mkdir } from 'node:fs/promises';
 import { Prisma } from '../../generated/prisma/client';
-
-type DocumentStatus = 'PENDING' | 'PROCESSING' | 'READY' | 'FAILED';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
-export class DocumentsService {
-  constructor(private prisma: PrismaService) {}
+export class DocumentsService implements OnModuleInit {
   private readonly logger = new Logger(DocumentsService.name);
+  private readonly dirPath: string;
+
+  constructor(
+    private config: ConfigService,
+    private prisma: PrismaService,
+  ) {
+    this.dirPath = this.config.get<string>('UPLOAD_DIR', 'uploads');
+  }
+
+  async onModuleInit() {
+    await mkdir(this.dirPath, {
+      recursive: true,
+    });
+  }
 
   create(data: {
     userId: string;
     filename: string;
     storedName: string;
     mimeType: string;
-    status: DocumentStatus;
   }) {
     return this.prisma.document.create({
       data,
@@ -30,17 +43,18 @@ export class DocumentsService {
   }
 
   async upload(file: Express.Multer.File, userId: string) {
+    if (!file) {
+      throw new BadRequestException('Файл обязателен');
+    }
     const fullFileName = file.originalname;
     const uniqName = `${randomUUID()}${extname(fullFileName)}`;
-    const filePath = join('uploads', uniqName);
+    const filePath = join(this.dirPath, uniqName);
     const mimeType = file.mimetype;
-    const statusDefault: DocumentStatus = 'PENDING';
     const data = {
       userId,
       filename: fullFileName,
       storedName: uniqName,
       mimeType,
-      status: statusDefault,
     };
     await writeFile(filePath, file.buffer);
     try {
@@ -66,18 +80,11 @@ export class DocumentsService {
   }
 
   async deleteByUser(id: string, userId: string) {
-    const document = await this.prisma.document.findUnique({
-      where: { id, userId },
-    });
-    if (!document) {
-      throw new NotFoundException('Документ не найден');
-    }
-
-    const filePath = join('uploads', document.storedName);
     try {
       const deleted = await this.prisma.document.delete({
         where: { id, userId },
       });
+      const filePath = join(this.dirPath, deleted.storedName);
       await this.safeUnlink(
         filePath,
         'При удалении конкретного файла по userID',

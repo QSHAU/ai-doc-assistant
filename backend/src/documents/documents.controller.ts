@@ -1,8 +1,11 @@
 import {
   Controller,
   Delete,
+  FileTypeValidator,
   Get,
+  MaxFileSizeValidator,
   Param,
+  ParseFilePipe,
   Post,
   UploadedFile,
   UseGuards,
@@ -19,9 +22,24 @@ export class DocumentsController {
   constructor(private documentsService: DocumentsService) {}
 
   @Post()
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(
+    FileInterceptor('file', {
+      limits: { fileSize: 10_485_760 },
+    }),
+  )
   upload(
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new MaxFileSizeValidator({ maxSize: 10_485_760 }),
+          new FileTypeValidator({
+            fileType: 'text/plain|application/pdf',
+            fallbackToMimetype: true,
+          }),
+        ],
+      }),
+    )
+    file: Express.Multer.File,
     @CurrentUser() user: { id: string },
   ) {
     return this.documentsService.upload(file, user.id);
