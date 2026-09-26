@@ -1,0 +1,136 @@
+.pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--bg);
+  font-size: 14px;
+}
+
+.pagination-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 5px;
+  padding: 6px 8px;
+  font-variant-numeric: tabular-nums;
+}
+
+.pagination-text {
+  color: var(--text-h);
+  font-weight: 600;
+}
+
+.pagination-total {
+  color: var(--text);
+}
+
+.pagination-prev,
+.pagination-next,
+.pagination-select {
+  box-sizing: border-box;
+  min-height: 44px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background-color: var(--bg);
+  color: var(--text-h);
+  font: inherit;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.pagination-prev,
+.pagination-next {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 9px 14px;
+  font-weight: 500;
+}
+
+.pagination-prev::before,
+.pagination-next::after {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-top: 1.5px solid currentColor;
+  border-right: 1.5px solid currentColor;
+}
+
+.pagination-prev::before {
+  transform: rotate(-135deg);
+}
+
+.pagination-next::after {
+  transform: rotate(45deg);
+}
+
+.pagination-select {
+  margin-left: auto;
+  min-width: 80px;
+  padding: 9px 32px 9px 14px;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath d='m4 6 4 4 4-4' fill='none' stroke='%23878091' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-position: right 10px center;
+  background-repeat: no-repeat;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (hover: hover) {
+  .pagination button:hover:not(:disabled),
+  .pagination-select:hover:not(:disabled) {
+    border-color: var(--accent-border);
+    color: var(--accent);
+  }
+}
+
+.pagination button:focus-visible,
+.pagination-select:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.pagination button:disabled,
+.pagination-select:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+@media (max-width: 480px) {
+  .pagination {
+    gap: 8px;
+    padding: 12px;
+  }
+
+  .pagination-wrapper {
+    flex: 1;
+    padding-inline: 0;
+  }
+
+  .pagination-prev,
+  .pagination-next {
+    padding-inline: 10px;
+  }
+
+  .pagination-select {
+    flex-basis: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pagination button,
+  .pagination-select {
+    transition: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .pagination-select {
+    appearance: auto;
+    background-image: none;
+  }
+}

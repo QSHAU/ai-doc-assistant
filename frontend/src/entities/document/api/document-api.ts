@@ -1,9 +1,14 @@
 import { apiClient } from "@/shared/api";
-import type { Document } from "../model/types";
+import type { DocumentsPage, ListDocumentsQueryDto } from "../model/types";
 
-export const documentsApi = {
-  async getDocuments(): Promise<Document> {
-    const { data } = await apiClient.get<Document>("/documents");
+export const documentApi = {
+  async getDocuments({
+    page,
+    limit,
+  }: ListDocumentsQueryDto): Promise<DocumentsPage> {
+    const { data } = await apiClient.get<DocumentsPage>("/documents", {
+      params: { page, limit },
+    });
     return data;
   },
 };

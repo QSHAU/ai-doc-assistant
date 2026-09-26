@@ -1,4 +1,5 @@
 import { useUser } from "@/entities/user";
+import { Spinner } from "@/shared/ui";
 import { Navigate, Outlet } from "react-router-dom";
 
 export const ProtectedRoute = () => {
@@ -7,7 +8,7 @@ export const ProtectedRoute = () => {
   return (
     <>
       {isLoading ? (
-        <span>Загрузка</span>
+        <Spinner />
       ) : !user ? (
         <Navigate to="/login" replace />
       ) : (

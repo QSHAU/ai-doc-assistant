@@ -1,0 +1,39 @@
+.document-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px;
+  text-align: left;
+}
+
+.document-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.document-page-greeting {
+  color: var(--text-h);
+}
+
+.document-page-logout {
+  padding: 8px 16px;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 15px;
+  color: var(--text);
+  background: transparent;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition:
+    color 0.2s,
+    border-color 0.2s;
+}
+
+.document-page-logout:hover {
+  color: var(--accent);
+  border-color: var(--accent-border);
+}
