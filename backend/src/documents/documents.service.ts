@@ -14,6 +14,7 @@ import { ConfigService } from '@nestjs/config';
 import { ListDocumentsQueryDto } from './dto/documents.dto';
 import { DocumentParserService } from './document-parser.service';
 import { chunkText } from './utils/chunk-text';
+import { OllamaEmbeddingsService } from '../ai/ollama-embeddings.service';
 
 @Injectable()
 export class DocumentsService implements OnModuleInit {
@@ -24,6 +25,7 @@ export class DocumentsService implements OnModuleInit {
     private config: ConfigService,
     private prisma: PrismaService,
     private readonly parser: DocumentParserService,
+    private readonly embeddings: OllamaEmbeddingsService,
   ) {
     this.dirPath = this.config.get<string>('UPLOAD_DIR', 'uploads');
   }
@@ -81,14 +83,31 @@ export class DocumentsService implements OnModuleInit {
       const chunks = chunkText(text);
       if (!chunks.length) throw Error('Документ не содержит текста');
       const documentChunks = chunks.map((chunk, i) => ({
+        id: randomUUID(),
         documentId: createdDocument.id,
         content: chunk,
         chunkIndex: i,
       }));
-      const createdDocumentChunk = await this.prisma.documentChunk.createMany({
-        data: documentChunks,
+      const vectors = await this.embeddings.embedTexts(chunks);
+      this.logger.debug(vectors.length, vectors[0].length);
+      createdDocument = await this.prisma.$transaction(async (tx) => {
+        await tx.documentChunk.createMany({
+          data: documentChunks,
+        });
+
+        for (let i = 0; i < documentChunks.length; i++) {
+          await this.saveChunkEmbedding(tx, documentChunks[i].id, vectors[i]);
+        }
+
+        const updatedDocument = await tx.document.update({
+          where: { id: createdDocument.id },
+          data: {
+            status: 'READY',
+            failureReason: null,
+          },
+        });
+        return updatedDocument;
       });
-      this.logger.debug(createdDocumentChunk.count);
     } catch (err) {
       this.logger.error(
         'Не удалось обработать документ',
@@ -149,6 +168,25 @@ export class DocumentsService implements OnModuleInit {
       this.logger.warn(
         `Произошла ошибка. Путь до файла: ${filePath}. Откуда: ${context}`,
         unlinkErr instanceof Error ? unlinkErr.stack : String(unlinkErr),
+      );
+    }
+  }
+
+  private async saveChunkEmbedding(
+    tx: Prisma.TransactionClient,
+    chunkId: string,
+    vector: number[],
+  ): Promise<void> {
+    const vectorText = JSON.stringify(vector);
+
+    const affectedRows = await tx.$executeRaw`
+        UPDATE "DocumentChunk"
+        SET "embedding" = ${vectorText}::vector
+        WHERE "id" = ${chunkId}
+      `;
+    if (affectedRows !== 1) {
+      throw Error(
+        `Не удалось сохранить эмбеддинг чанка. Ожидалась 1 обновлённая строка, получено ${affectedRows}. ID чанка ${chunkId}`,
       );
     }
   }
