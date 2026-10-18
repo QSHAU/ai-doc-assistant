@@ -1,12 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { EmbeddingsProvider } from './embeddings.provider';
 
 interface EmbeddingResponse {
   embeddings: number[][];
 }
 
 @Injectable()
-export class OllamaEmbeddingsService {
+export class OllamaEmbeddingsService implements EmbeddingsProvider {
   private readonly baseUrl: string;
   private readonly model: string;
   private readonly dimensions: number;

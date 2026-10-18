@@ -11,10 +11,10 @@ import { extname, join } from 'node:path';
 import { writeFile, unlink, mkdir } from 'node:fs/promises';
 import { Prisma, Document } from '../../generated/prisma/client';
 import { ConfigService } from '@nestjs/config';
-import { ListDocumentsQueryDto } from './dto/documents.dto';
+import { ListDocumentsQueryDto } from './dto/list-documents-query.dto';
 import { DocumentParserService } from './document-parser.service';
 import { chunkText } from './utils/chunk-text';
-import { OllamaEmbeddingsService } from '../ai/ollama-embeddings.service';
+import { EmbeddingsProvider } from '../ai/embeddings.provider';
 
 @Injectable()
 export class DocumentsService implements OnModuleInit {
@@ -25,7 +25,7 @@ export class DocumentsService implements OnModuleInit {
     private config: ConfigService,
     private prisma: PrismaService,
     private readonly parser: DocumentParserService,
-    private readonly embeddings: OllamaEmbeddingsService,
+    private readonly embeddings: EmbeddingsProvider,
   ) {
     this.dirPath = this.config.get<string>('UPLOAD_DIR', 'uploads');
   }

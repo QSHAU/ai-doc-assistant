@@ -17,7 +17,7 @@ import { DocumentsService } from './documents.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { MinFileSizeValidator } from './validators/min-file-size.validator';
-import { ListDocumentsQueryDto } from './dto/documents.dto';
+import { ListDocumentsQueryDto } from './dto/list-documents-query.dto';
 
 @Controller('documents')
 @UseGuards(JwtAuthGuard)
