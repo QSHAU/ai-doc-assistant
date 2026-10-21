@@ -1,4 +1,5 @@
 import {
+  Body,
   Controller,
   Delete,
   FileTypeValidator,
@@ -18,6 +19,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { MinFileSizeValidator } from './validators/min-file-size.validator';
 import { ListDocumentsQueryDto } from './dto/list-documents-query.dto';
+import { BulkDeleteDocumentsDto } from './dto/bulk-delete-documents.dto';
 
 @Controller('documents')
 @UseGuards(JwtAuthGuard)
@@ -48,6 +50,14 @@ export class DocumentsController {
     @CurrentUser() user: { id: string },
   ) {
     return this.documentsService.upload(file, user.id);
+  }
+
+  @Post('bulk-delete')
+  bulkDelete(
+    @Body() dto: BulkDeleteDocumentsDto,
+    @CurrentUser() user: { id: string },
+  ) {
+    return this.documentsService.bulkDelete(dto.ids, user.id);
   }
 
   @Get()

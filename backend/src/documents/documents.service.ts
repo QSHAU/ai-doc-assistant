@@ -161,6 +161,29 @@ export class DocumentsService implements OnModuleInit {
     }
   }
 
+  async bulkDelete(ids: string[], userId: string) {
+    const [bulkDelDocs] = await this.prisma.$transaction([
+      this.prisma.document.findMany({
+        where: { id: { in: ids }, userId },
+      }),
+      this.prisma.document.deleteMany({
+        where: { id: { in: ids }, userId },
+      }),
+    ]);
+
+    const docsArr = bulkDelDocs.map((doc) => doc.id);
+
+    for (const doc of bulkDelDocs) {
+      const filePath = join(this.dirPath, doc.storedName);
+      await this.safeUnlink(
+        filePath,
+        'При удалении выбранных файлов по userID',
+      );
+    }
+
+    return { deletedIds: docsArr };
+  }
+
   private async safeUnlink(filePath: string, context: string) {
     try {
       await unlink(filePath);
