@@ -11,6 +11,7 @@ export class OllamaEmbeddingsService implements EmbeddingsProvider {
   private readonly baseUrl: string;
   private readonly model: string;
   private readonly dimensions: number;
+  private readonly timeout: number;
 
   constructor(private config: ConfigService) {
     this.baseUrl = this.config.get<string>(
@@ -24,9 +25,16 @@ export class OllamaEmbeddingsService implements EmbeddingsProvider {
     this.dimensions = Number(
       this.config.get<string>('EMBEDDING_DIMENSIONS', '768'),
     );
+    this.timeout = Number(
+      this.config.get<string>('EMBEDDING_TIMEOUT', '10000'),
+    );
 
     if (!Number.isInteger(this.dimensions) || this.dimensions <= 0) {
       throw Error('Ошибка с настройкой EMBEDDING_DIMENSIONS');
+    }
+
+    if (!Number.isInteger(this.timeout) || this.timeout <= 0) {
+      throw Error('Ошибка с настройкой EMBEDDING_TIMEOUT');
     }
   }
   async embedTexts(texts: string[]): Promise<number[][]> {
@@ -41,6 +49,7 @@ export class OllamaEmbeddingsService implements EmbeddingsProvider {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(postData),
+        signal: AbortSignal.timeout(this.timeout),
       });
 
       if (!response.ok) {
@@ -61,6 +70,14 @@ export class OllamaEmbeddingsService implements EmbeddingsProvider {
         throw Error('Неправильная структура');
       }
     } catch (err) {
+      if (err instanceof DOMException) {
+        if (err.name === 'TimeoutError') {
+          throw Error(`Превышено время ожидания: ${this.timeout}ms`, {
+            cause: err,
+          });
+        }
+        throw err;
+      }
       console.error('Что то не удалось', err);
       throw err;
     }
