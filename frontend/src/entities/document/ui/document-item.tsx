@@ -4,15 +4,23 @@ import type { ReactNode } from "react";
 
 type DocumentItemProps = {
   item: Document;
+  isChecked?: boolean;
   actions?: ReactNode;
+  select?: () => void;
 };
 
-export const DocumentItem = ({ item, actions }: DocumentItemProps) => {
+export const DocumentItem = ({
+  item,
+  isChecked,
+  actions,
+  select,
+}: DocumentItemProps) => {
   const { filename, status, createdAt, failureReason } = item;
   const time = new Date(createdAt);
   return (
     <div className="documentItem">
       <div className="documentItem-left">
+        <input type="checkbox" onChange={select} checked={isChecked} />
         <svg
           className="documentItem-icon"
           width="28"

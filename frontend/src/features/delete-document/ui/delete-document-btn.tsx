@@ -3,7 +3,7 @@ import { useDeleteDocument } from "../model/use-delete-document";
 import "./delete-document-btn.css";
 import { ConfirmDialog } from "@/shared/ui";
 
-export type THandleDeleteDocument = {
+type THandleDeleteDocument = {
   documentId: string;
   onDeleted: () => void;
 };
@@ -15,7 +15,7 @@ export const DeleteDocumentBtn = ({
   const [isOpen, setIsOpen] = useState(false);
   const { deleteDoc, isLoading, error } = useDeleteDocument();
 
-  const text = "Are you sure?";
+  const text = "Вы уверены?";
 
   const onConfirm = async () => {
     setIsOpen(false);

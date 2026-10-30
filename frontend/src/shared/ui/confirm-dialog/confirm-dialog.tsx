@@ -62,10 +62,10 @@ export const ConfirmDialog = ({
       <h3 className="confirm-dialog-title">{text}</h3>
       <div className="confirm-dialog-wrapper">
         <button className="confirm-dialog-yes" onClick={onConfirm}>
-          Yes
+          Да
         </button>
         <button className="confirm-dialog-no" onClick={onClose}>
-          No
+          Нет
         </button>
       </div>
     </dialog>

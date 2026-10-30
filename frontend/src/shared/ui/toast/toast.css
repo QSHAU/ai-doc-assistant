@@ -1,0 +1,122 @@
+/* контейнер прибит к правому нижнему углу окна; тосты внутри идут столбиком,
+   новый появляется снизу и выталкивает старые вверх */
+.toast-list {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+  width: min(360px, calc(100vw - 32px));
+  /* пустые места контейнера не перехватывают клики по странице */
+  pointer-events: none;
+}
+
+.toast {
+  position: relative;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 14px 44px 14px 16px;
+  color: var(--text-h);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent);
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+  pointer-events: auto;
+  animation: toast-in 0.26s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.toast--success {
+  border-left-color: #16a34a;
+}
+
+.toast--error {
+  border-left-color: #dc2626;
+}
+
+/* forwards — после анимации элемент остаётся невидимым, пока React его не уберёт */
+.toast--leaving {
+  animation: toast-out 0.22s ease-in forwards;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+}
+
+@keyframes toast-out {
+  to {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+}
+
+.toast-text {
+  display: block;
+  font-size: 15px;
+  line-height: 1.45;
+  /* перенос строки в тексте сообщения (\n) отображается как перенос */
+  white-space: pre-line;
+}
+
+.toast-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  font: inherit;
+  font-size: 15px;
+  line-height: 1;
+  color: var(--text);
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition:
+    color 0.2s,
+    background 0.2s;
+}
+
+.toast-close:hover {
+  color: var(--text-h);
+  background: var(--accent-bg);
+}
+
+.toast-close:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* без движения, но анимацию не отключаем совсем:
+   иначе onAnimationEnd не сработает и тост не закроется */
+@media (prefers-reduced-motion: reduce) {
+  .toast {
+    animation: toast-fade-in 0.15s linear;
+  }
+
+  .toast--leaving {
+    animation: toast-fade-out 0.15s linear forwards;
+  }
+
+  @keyframes toast-fade-in {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @keyframes toast-fade-out {
+    to {
+      opacity: 0;
+    }
+  }
+}

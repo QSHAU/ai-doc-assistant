@@ -4,9 +4,12 @@ import "./documents-page.css";
 import { UploadDocumentForm } from "@/features/upload-document";
 import { DeleteDocumentBtn } from "@/features/delete-document";
 import { Pagination } from "@/shared/ui";
+import { useState } from "react";
+import { BulkDeleteDocumentsBtn } from "@/features/bulk-delete-documents";
 
 export const DocumentsPage = () => {
   const { user, setUser } = useUser();
+  const [documentIds, setDocumentIds] = useState<string[]>([]);
   const {
     refetch,
     documents,
@@ -19,9 +22,34 @@ export const DocumentsPage = () => {
     totalPages,
   } = useDocuments();
 
+  const isNotActive = documentIds.length === 0;
+
   const handleClick = () => {
     localStorage.removeItem("accessToken");
     setUser(null);
+  };
+
+  const toggleSelect = (id: string) => {
+    setDocumentIds((prevState) =>
+      prevState.includes(id)
+        ? prevState.filter((docId) => docId !== id)
+        : [...prevState, id],
+    );
+  };
+
+  const onBulkDeleted = () => {
+    setDocumentIds([]);
+    refetch();
+  };
+
+  const onChangePage = (page: number) => {
+    setDocumentIds([]);
+    goToPage(page);
+  };
+
+  const onChangeLimit = (limit: number) => {
+    setDocumentIds([]);
+    changeLimit(limit);
   };
 
   return (
@@ -36,21 +64,28 @@ export const DocumentsPage = () => {
       </div>
 
       <UploadDocumentForm onUploaded={refetch} />
+      <BulkDeleteDocumentsBtn
+        documentIds={documentIds}
+        onDeleted={onBulkDeleted}
+        isNotActive={isNotActive}
+      />
 
       <DocumentsList
         documents={documents}
         isLoading={isLoading}
         error={error}
+        choosedDocs={documentIds}
         renderActions={(id) => (
           <DeleteDocumentBtn documentId={id} onDeleted={refetch} />
         )}
+        onToggleSelect={toggleSelect}
       />
       <Pagination
         page={currentPage}
         totalPages={totalPages}
         isLoading={isLoading}
-        handlePageChange={goToPage}
-        handleChangeLimit={changeLimit}
+        handlePageChange={onChangePage}
+        handleChangeLimit={onChangeLimit}
         currentLimit={currentLimit}
       />
     </div>
