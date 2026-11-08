@@ -13,28 +13,27 @@ export const BulkDeleteDocumentsBtn = ({
   isNotActive: boolean;
 }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [deleteStatus, setDeleteStatus] = useState<"success" | "error">(
-    "success",
-  );
   const { toastList, addToast, removeToast } = useToast();
   const { bulkDeleteDocs, isLoading, error } = useBulkDeleteDocuments();
 
   const text = `Удалить ${documentIds.length} документов?`;
+  const bulkDeteleText = (returnedCount: number, sendedCount: number) => {
+    return returnedCount < sendedCount
+      ? ". Остальные уже удалены или недоступны"
+      : "";
+  };
   const onConfirm = async () => {
     setIsOpen(false);
-    const bulkDeleteStatus = await bulkDeleteDocs(documentIds);
-    if (bulkDeleteStatus.status === "success") {
+    const bulkDeleteInfo = await bulkDeleteDocs(documentIds);
+    if (bulkDeleteInfo.status === "success") {
       onDeleted();
-      documentIds.map((doc) => {
-        addToast(doc, "success");
-      });
+      addToast(
+        `Удалено ${bulkDeleteInfo.count} из ${documentIds.length}${bulkDeteleText(bulkDeleteInfo.count, documentIds.length)}`,
+        "success",
+      );
     } else {
-      documentIds.map((doc) => {
-        addToast(doc, "error");
-      });
+      addToast("Произошла какая-то ошибка", "error");
     }
-
-    setDeleteStatus(bulkDeleteStatus.status);
   };
 
   const onClose = () => {
@@ -60,13 +59,17 @@ export const BulkDeleteDocumentsBtn = ({
           onClose={onClose}
         />
       )}
-      {toastList && (
-        <Toast
-          message={deletedDocsText}
-          onClose={removeToast}
-          variant={deleteStatus}
-        />
-      )}
+      {toastList.map((toast) => {
+        return (
+          <Toast
+            key={toast.id}
+            id={toast.id}
+            message={toast.message}
+            onClose={removeToast}
+            variant={toast.variant}
+          />
+        );
+      })}
     </>
   );
 };

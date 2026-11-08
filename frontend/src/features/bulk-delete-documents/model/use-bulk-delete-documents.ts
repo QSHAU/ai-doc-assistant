@@ -2,17 +2,13 @@ import { useState } from "react";
 import { bulkDeleteApi } from "../api/bulk-delete-documents-api";
 import axios from "axios";
 
-type TBulkDeleteDocsStatus = "success" | "error";
-
-interface TBulkDeleteDocsInfo {
-  count: number;
-  status: TBulkDeleteDocsStatus;
-}
+type TBulkDeleteDocsInfo =
+  | { status: "success"; count: number }
+  | { status: "error" };
 
 export function useBulkDeleteDocuments() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [deletedDocsCount, setDeletedDocsCount] = useState(0);
 
   const bulkDeleteDocs = async (
     documentsIds: string[],
@@ -21,9 +17,9 @@ export function useBulkDeleteDocuments() {
       setIsLoading(true);
       setError(null);
       const deletedDocs = await bulkDeleteApi.bulkDelete(documentsIds);
-      setDeletedDocsCount(deletedDocs.deletedIds.length);
+
       return {
-        count: deletedDocsCount,
+        count: deletedDocs.deletedIds.length,
         status: "success",
       };
     } catch (err) {
@@ -33,7 +29,6 @@ export function useBulkDeleteDocuments() {
         setError("Что-то пошло не так");
       }
       return {
-        count: deletedDocsCount,
         status: "error",
       };
     } finally {
