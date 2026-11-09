@@ -36,18 +36,6 @@ export class DocumentsService implements OnModuleInit {
     });
   }
 
-  create(data: {
-    userId: string;
-    filename: string;
-    storedName: string;
-    mimeType: string;
-    size: number;
-  }) {
-    return this.prisma.document.create({
-      data,
-    });
-  }
-
   async upload(file: Express.Multer.File, userId: string) {
     const fullFileName = file.originalname;
     const uniqName = `${randomUUID()}${extname(fullFileName)}`;
@@ -78,51 +66,7 @@ export class DocumentsService implements OnModuleInit {
       throw err;
     }
 
-    try {
-      const text = await this.parser.parse(filePath, mimeType);
-      const chunks = chunkText(text);
-      if (!chunks.length) throw Error('Документ не содержит текста');
-      const documentChunks = chunks.map((chunk, i) => ({
-        id: randomUUID(),
-        documentId: createdDocument.id,
-        content: chunk,
-        chunkIndex: i,
-      }));
-      const vectors = await this.embeddings.embedTexts(chunks);
-      this.logger.debug(vectors.length, vectors[0].length);
-      createdDocument = await this.prisma.$transaction(async (tx) => {
-        await tx.documentChunk.createMany({
-          data: documentChunks,
-        });
-
-        for (let i = 0; i < documentChunks.length; i++) {
-          await this.saveChunkEmbedding(tx, documentChunks[i].id, vectors[i]);
-        }
-
-        const updatedDocument = await tx.document.update({
-          where: { id: createdDocument.id },
-          data: {
-            status: 'READY',
-            failureReason: null,
-          },
-        });
-        return updatedDocument;
-      });
-    } catch (err) {
-      this.logger.error(
-        'Не удалось обработать документ',
-        err instanceof Error ? err.stack : String(err),
-      );
-      const documentId = createdDocument.id;
-      createdDocument = await this.prisma.document.update({
-        where: { id: documentId },
-        data: {
-          status: 'FAILED',
-          failureReason: 'Не удалось обработать документ',
-        },
-      });
-    }
-    return createdDocument;
+    return this.processDocument(createdDocument);
   }
 
   async findAll(userId: string, query: ListDocumentsQueryDto) {
@@ -184,6 +128,28 @@ export class DocumentsService implements OnModuleInit {
     return { deletedIds: docsArr };
   }
 
+  async reprocess(id: string, userId: string): Promise<Document> {
+    const document = await this.prisma.document.findUnique({
+      where: { id: id, userId: userId },
+    });
+    if (!document) {
+      throw new NotFoundException('Документ не найден');
+    }
+    return this.processDocument(document);
+  }
+
+  private create(data: {
+    userId: string;
+    filename: string;
+    storedName: string;
+    mimeType: string;
+    size: number;
+  }) {
+    return this.prisma.document.create({
+      data,
+    });
+  }
+
   private async safeUnlink(filePath: string, context: string) {
     try {
       await unlink(filePath);
@@ -212,5 +178,74 @@ export class DocumentsService implements OnModuleInit {
         `Не удалось сохранить эмбеддинг чанка. Ожидалась 1 обновлённая строка, получено ${affectedRows}. ID чанка ${chunkId}`,
       );
     }
+  }
+
+  private async processDocument(document: Document): Promise<Document> {
+    let createdDocument: Document;
+    const updatedDocs = await this.prisma.document.updateMany({
+      where: {
+        id: document.id,
+        userId: document.userId,
+        status: { not: 'PROCESSING' },
+      },
+      data: {
+        status: 'PROCESSING',
+        failureReason: null,
+      },
+    });
+    if (updatedDocs.count !== 1) {
+      throw new ConflictException('Не удалось начать обработку документа');
+    }
+    try {
+      const filePath = join(this.dirPath, document.storedName);
+      const text = await this.parser.parse(filePath, document.mimeType);
+      const chunks = chunkText(text);
+      if (!chunks.length) throw Error('Документ не содержит текста');
+      const documentChunks = chunks.map((chunk, i) => ({
+        id: randomUUID(),
+        documentId: document.id,
+        content: chunk,
+        chunkIndex: i,
+      }));
+      const vectors = await this.embeddings.embedDocuments(chunks);
+      const modelName = this.embeddings.getModelName();
+      this.logger.debug(vectors.length, vectors[0].length);
+      createdDocument = await this.prisma.$transaction(async (tx) => {
+        await tx.documentChunk.deleteMany({
+          where: { documentId: document.id },
+        });
+        await tx.documentChunk.createMany({
+          data: documentChunks,
+        });
+
+        for (let i = 0; i < documentChunks.length; i++) {
+          await this.saveChunkEmbedding(tx, documentChunks[i].id, vectors[i]);
+        }
+
+        const updatedDocument = await tx.document.update({
+          where: { id: document.id },
+          data: {
+            status: 'READY',
+            embeddingModel: modelName,
+            failureReason: null,
+          },
+        });
+        return updatedDocument;
+      });
+    } catch (err) {
+      this.logger.error(
+        'Не удалось обработать документ',
+        err instanceof Error ? err.stack : String(err),
+      );
+      const documentId = document.id;
+      createdDocument = await this.prisma.document.update({
+        where: { id: documentId },
+        data: {
+          status: 'FAILED',
+          failureReason: 'Не удалось обработать документ',
+        },
+      });
+    }
+    return createdDocument;
   }
 }

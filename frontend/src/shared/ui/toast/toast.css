@@ -2,19 +2,25 @@
    новый появляется снизу и выталкивает старые вверх */
 .toast-list {
   position: fixed;
-  right: 16px;
-  bottom: 16px;
+  right: max(16px, env(safe-area-inset-right));
+  bottom: max(16px, env(safe-area-inset-bottom));
   z-index: 1000;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   gap: 10px;
   width: min(360px, calc(100vw - 32px));
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
+  padding: 8px;
+  margin: -8px;
+  box-sizing: border-box;
   /* пустые места контейнера не перехватывают клики по странице */
   pointer-events: none;
 }
 
 .toast {
+  flex: none;
   position: relative;
   box-sizing: border-box;
   width: 100%;
@@ -37,20 +43,8 @@
   border-left-color: #dc2626;
 }
 
-/* forwards — после анимации элемент остаётся невидимым, пока React его не уберёт */
-.toast--leaving {
-  animation: toast-out 0.22s ease-in forwards;
-}
-
 @keyframes toast-in {
   from {
-    opacity: 0;
-    transform: translateX(24px);
-  }
-}
-
-@keyframes toast-out {
-  to {
     opacity: 0;
     transform: translateX(24px);
   }
@@ -62,6 +56,7 @@
   line-height: 1.45;
   /* перенос строки в тексте сообщения (\n) отображается как перенос */
   white-space: pre-line;
+  overflow-wrap: anywhere;
 }
 
 .toast-close {
@@ -97,26 +92,10 @@
   outline-offset: 2px;
 }
 
-/* без движения, но анимацию не отключаем совсем:
-   иначе onAnimationEnd не сработает и тост не закроется */
 @media (prefers-reduced-motion: reduce) {
-  .toast {
-    animation: toast-fade-in 0.15s linear;
-  }
-
-  .toast--leaving {
-    animation: toast-fade-out 0.15s linear forwards;
-  }
-
-  @keyframes toast-fade-in {
-    from {
-      opacity: 0;
-    }
-  }
-
-  @keyframes toast-fade-out {
-    to {
-      opacity: 0;
-    }
+  .toast,
+  .toast-close {
+    animation: none;
+    transition: none;
   }
 }

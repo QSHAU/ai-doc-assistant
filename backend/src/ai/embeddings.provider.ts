@@ -5,5 +5,8 @@ export abstract class EmbeddingsProvider {
    * Все вектора одной длины. Длина зависит от размерности модели
    * При любой неудаче метод выбрасывает исключение и никогда не возвращает пустой или частичный результат.
    * */
-  abstract embedTexts(texts: string[]): Promise<number[][]>;
+  abstract embedDocuments(texts: string[]): Promise<number[][]>;
+
+  // Метод для получения имени используемой модели
+  abstract getModelName(): string;
 }

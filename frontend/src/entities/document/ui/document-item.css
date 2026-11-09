@@ -18,6 +18,30 @@
   box-shadow: var(--shadow);
 }
 
+.documentItem:has(.documentItem-checkbox:checked) {
+  border-color: var(--accent-border);
+  background: linear-gradient(var(--accent-bg), var(--accent-bg)), var(--bg);
+}
+
+.documentItem:has(.documentItem-checkbox:focus-visible) {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.documentItem-checkbox {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.documentItem-checkbox:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
 .documentItem-left {
   flex: 1;
   display: flex;

@@ -1,0 +1,109 @@
+.bulk-delete-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 20px;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg);
+}
+
+.bulk-delete-toolbar__summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text);
+  font-size: 14px;
+}
+
+.bulk-delete-toolbar__count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 30px;
+  height: 30px;
+  padding-inline: 5px;
+  box-sizing: border-box;
+  border-radius: 8px;
+  background: var(--accent-bg);
+  color: var(--accent);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.bulk-delete-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 8px 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.4;
+  cursor: pointer;
+  transition:
+    color 0.2s,
+    border-color 0.2s,
+    opacity 0.2s;
+}
+
+.bulk-delete-btn svg {
+  flex: none;
+}
+
+.bulk-delete-btn:hover:not(:disabled) {
+  color: #b91c1c;
+  border-color: rgba(239, 68, 68, 0.6);
+}
+
+.bulk-delete-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.bulk-delete-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.bulk-delete-toolbar[aria-busy="true"] .bulk-delete-btn {
+  cursor: progress;
+}
+
+.bulk-delete-error {
+  flex-basis: 100%;
+  color: #b91c1c;
+  font-size: 13px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+@media (prefers-color-scheme: dark) {
+  .bulk-delete-btn:hover:not(:disabled),
+  .bulk-delete-error {
+    color: #fca5a5;
+  }
+}
+
+@media (max-width: 560px) {
+  .bulk-delete-toolbar {
+    align-items: stretch;
+  }
+
+  .bulk-delete-toolbar__summary,
+  .bulk-delete-btn {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bulk-delete-btn {
+    transition: none;
+  }
+}

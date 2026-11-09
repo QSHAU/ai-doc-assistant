@@ -2,6 +2,7 @@ import { DocumentItem } from "./document-item";
 import { Spinner } from "@/shared/ui";
 import type { Document } from "../model/types";
 import type { ReactNode } from "react";
+import "./document-list.css";
 
 type DocumentListProps = {
   documents: Document[];
@@ -15,13 +16,13 @@ type DocumentListProps = {
 export function DocumentsList({
   documents,
   isLoading,
-  // error,
+  error,
   choosedDocs,
   renderActions,
   onToggleSelect,
 }: DocumentListProps) {
   if (isLoading) return <Spinner />;
-  // if (error) return <div className="document-page-error">{error}</div>;
+  if (error) return <div className="document-page-error">{error}</div>;
   if (!documents.length)
     return (
       <span className="document-page-empty">

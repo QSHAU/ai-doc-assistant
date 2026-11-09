@@ -37,3 +37,23 @@
   color: var(--accent);
   border-color: var(--accent-border);
 }
+
+.document-page-logout:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.document-page-greeting {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.document-page-logout {
+  flex: none;
+}
+
+@media (max-width: 560px) {
+  .document-page {
+    padding: 16px;
+  }
+}

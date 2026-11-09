@@ -4,6 +4,7 @@ import {
   Delete,
   FileTypeValidator,
   Get,
+  HttpCode,
   MaxFileSizeValidator,
   Param,
   ParseFilePipe,
@@ -58,6 +59,12 @@ export class DocumentsController {
     @CurrentUser() user: { id: string },
   ) {
     return this.documentsService.bulkDelete(dto.ids, user.id);
+  }
+
+  @Post(':id/reprocess')
+  @HttpCode(200)
+  reprocess(@Param('id') id: string, @CurrentUser() user: { id: string }) {
+    return this.documentsService.reprocess(id, user.id);
   }
 
   @Get()

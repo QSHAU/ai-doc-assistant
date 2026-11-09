@@ -20,7 +20,13 @@ export const DocumentItem = ({
   return (
     <div className="documentItem">
       <div className="documentItem-left">
-        <input type="checkbox" onChange={select} checked={isChecked} />
+        <input
+          className="documentItem-checkbox"
+          type="checkbox"
+          onChange={select}
+          checked={isChecked}
+          aria-label={`Выбрать документ «${filename}»`}
+        />
         <svg
           className="documentItem-icon"
           width="28"

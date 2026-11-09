@@ -52,6 +52,11 @@ export const DocumentsPage = () => {
     changeLimit(limit);
   };
 
+  const onDeletedDoc = (id: string) => {
+    setDocumentIds((prevState) => prevState.filter((docId) => docId !== id));
+    refetch();
+  };
+
   return (
     <div className="document-page">
       <div className="document-page-header">
@@ -76,7 +81,10 @@ export const DocumentsPage = () => {
         error={error}
         choosedDocs={documentIds}
         renderActions={(id) => (
-          <DeleteDocumentBtn documentId={id} onDeleted={refetch} />
+          <DeleteDocumentBtn
+            documentId={id}
+            onDeleted={() => onDeletedDoc(id)}
+          />
         )}
         onToggleSelect={toggleSelect}
       />
