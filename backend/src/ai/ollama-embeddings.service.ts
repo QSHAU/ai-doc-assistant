@@ -1,13 +1,19 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { EmbeddingsProvider } from './embeddings.provider';
+import { EmbeddingMetadata, EmbeddingsProvider } from './embeddings.provider';
 
 interface EmbeddingResponse {
   embeddings: number[][];
 }
 
+interface ModelsResponse {
+  models: { name: string; digest: string }[];
+}
+
 @Injectable()
-export class OllamaEmbeddingsService implements EmbeddingsProvider {
+export class OllamaEmbeddingsService
+  implements EmbeddingsProvider, OnModuleInit
+{
   private readonly baseUrl: string;
   private readonly model: string;
   private readonly dimensions: number;
@@ -60,6 +66,54 @@ export class OllamaEmbeddingsService implements EmbeddingsProvider {
 
     return await this.embedTexts(arr);
   }
+
+  async onModuleInit(): Promise<void> {
+    try {
+      const response = await fetch(`${this.baseUrl}/api/tags`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        signal: AbortSignal.timeout(this.timeout),
+      });
+
+      if (!response.ok) {
+        throw Error(`Ошибка ${response.status}`);
+      }
+
+      const body: unknown = await response.json();
+
+      if (this.isModelsResponse(body)) {
+        const currentLLMModel = body.models.find(
+          (model) => model.name === this.model,
+        );
+
+        if (!currentLLMModel) {
+          throw new Error('Модель отсутствует в Ollama');
+        }
+
+        if (
+          currentLLMModel.digest.toLowerCase() !==
+          this.modelDigest.toLowerCase()
+        )
+          throw new Error(
+            `Digest модели не совпадает с ожидаемым. Ожидалось: ${this.modelDigest} Получено: ${currentLLMModel.digest}`,
+          );
+      } else {
+        throw new Error('Структура body неправильная');
+      }
+    } catch (err) {
+      if (err instanceof DOMException) {
+        if (err.name === 'TimeoutError') {
+          throw Error(`Превышено время ожидания: ${this.timeout}ms`, {
+            cause: err,
+          });
+        }
+        throw err;
+      }
+      console.error('Что то не удалось', err);
+      throw err;
+    }
+  }
+
   private async embedTexts(texts: string[]): Promise<number[][]> {
     const resArr: number[][] = [];
 
@@ -118,8 +172,18 @@ export class OllamaEmbeddingsService implements EmbeddingsProvider {
     }
   }
 
-  getModelName(): string {
-    return this.model;
+  async embedQuery(texts: string): Promise<number[]> {
+    const arrText = [`task: search result | query: ${texts}`];
+    const vectors = await this.embedTexts(arrText);
+    return vectors[0];
+  }
+
+  getMetadata(): EmbeddingMetadata {
+    return {
+      model: this.model,
+      digest: this.modelDigest.toLowerCase(),
+      format: 'embeddinggemma-document-v1',
+    };
   }
 
   private isEmbeddingResponse(body: unknown): body is EmbeddingResponse {
@@ -135,5 +199,19 @@ export class OllamaEmbeddingsService implements EmbeddingsProvider {
         return false;
       }
     });
+  }
+
+  private isModelsResponse(body: unknown): body is ModelsResponse {
+    if (!body || typeof body !== 'object' || !('models' in body)) return false;
+    if (!Array.isArray(body.models)) return false;
+    return body.models.every(
+      (tagsObj: unknown) =>
+        tagsObj !== null &&
+        typeof tagsObj === 'object' &&
+        'name' in tagsObj &&
+        'digest' in tagsObj &&
+        typeof tagsObj.name === 'string' &&
+        typeof tagsObj.digest === 'string',
+    );
   }
 }

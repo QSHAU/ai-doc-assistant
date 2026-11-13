@@ -208,7 +208,7 @@ export class DocumentsService implements OnModuleInit {
         chunkIndex: i,
       }));
       const vectors = await this.embeddings.embedDocuments(chunks);
-      const modelName = this.embeddings.getModelName();
+      const metadataModel = this.embeddings.getMetadata();
       this.logger.debug(vectors.length, vectors[0].length);
       createdDocument = await this.prisma.$transaction(async (tx) => {
         await tx.documentChunk.deleteMany({
@@ -226,7 +226,9 @@ export class DocumentsService implements OnModuleInit {
           where: { id: document.id },
           data: {
             status: 'READY',
-            embeddingModel: modelName,
+            embeddingModel: metadataModel.model,
+            embeddingModelDigest: metadataModel.digest,
+            embeddingFormat: metadataModel.format,
             failureReason: null,
           },
         });

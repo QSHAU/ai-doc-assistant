@@ -45,6 +45,8 @@ model Document {
   chunks        DocumentChunk[]
   conversations Conversation[]
   embeddingModel String?
+  embeddingModelDigest String?
+  embeddingFormat String?
 }
 
 model DocumentChunk {

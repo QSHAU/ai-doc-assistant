@@ -1,3 +1,9 @@
+export type EmbeddingMetadata = {
+  model: string;
+  digest: string;
+  format: string;
+};
+
 export abstract class EmbeddingsProvider {
   /**
    * Возвращается столько векторов, сколько было передано текстов
@@ -7,6 +13,8 @@ export abstract class EmbeddingsProvider {
    * */
   abstract embedDocuments(texts: string[]): Promise<number[][]>;
 
-  // Метод для получения имени используемой модели
-  abstract getModelName(): string;
+  // Метод для получения метаданных используемой модели а именно имени, дайджеста и формата
+  abstract getMetadata(): EmbeddingMetadata;
+
+  abstract embedQuery(text: string): Promise<number[]>;
 }
