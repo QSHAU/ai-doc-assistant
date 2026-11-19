@@ -15,6 +15,7 @@ import { ListDocumentsQueryDto } from './dto/list-documents-query.dto';
 import { DocumentParserService } from './document-parser.service';
 import { chunkText } from './utils/chunk-text';
 import { EmbeddingsProvider } from '../ai/embeddings.provider';
+import { SearchResult } from './types/document-service-type';
 
 @Injectable()
 export class DocumentsService implements OnModuleInit {
@@ -136,6 +137,50 @@ export class DocumentsService implements OnModuleInit {
       throw new NotFoundException('Документ не найден');
     }
     return this.processDocument(document);
+  }
+
+  async search(documentId: string, userId: string, question: string) {
+    const document = await this.prisma.document.findUnique({
+      where: { id: documentId, userId: userId },
+    });
+
+    if (!document) {
+      throw new NotFoundException('Документ не найден');
+    }
+    const embeddingMetadata = this.embeddings.getMetadata();
+    if (document.status !== 'READY') {
+      throw new ConflictException('Статус не соответствуют нужному формату');
+    } else if (
+      document.embeddingFormat !== embeddingMetadata.format ||
+      document.embeddingModel !== embeddingMetadata.model ||
+      document.embeddingModelDigest !== embeddingMetadata.digest
+    ) {
+      throw new ConflictException(
+        'Метадата документа не соответствуют нужному формату',
+      );
+    }
+
+    const initialVector = await this.embeddings.embedQuery(question);
+    const convertedVector = JSON.stringify(initialVector);
+
+    const results = await this.prisma.$queryRaw<SearchResult[]>`
+      SELECT c.id, c."documentId", c.content, c."chunkIndex",
+          (c.embedding <=> ${convertedVector}::vector) AS distance
+      FROM "DocumentChunk" c
+      JOIN "Document" d ON c."documentId" = d.id
+      WHERE c."documentId" = ${document.id} AND 
+      d."status" = ${document.status} AND 
+      d."userId" = ${userId} AND 
+      d."embeddingFormat" = ${embeddingMetadata.format} AND 
+      d."embeddingModel" = ${embeddingMetadata.model} AND 
+      d."embeddingModelDigest" = ${embeddingMetadata.digest} AND 
+      c.embedding IS NOT NULL
+
+      ORDER BY distance ASC
+      LIMIT 5
+    `;
+
+    return results;
   }
 
   private create(data: {

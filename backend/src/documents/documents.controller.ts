@@ -21,6 +21,7 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { MinFileSizeValidator } from './validators/min-file-size.validator';
 import { ListDocumentsQueryDto } from './dto/list-documents-query.dto';
 import { BulkDeleteDocumentsDto } from './dto/bulk-delete-documents.dto';
+import { SearchDocumentDTO } from './dto/search-document.dto';
 
 @Controller('documents')
 @UseGuards(JwtAuthGuard)
@@ -65,6 +66,16 @@ export class DocumentsController {
   @HttpCode(200)
   reprocess(@Param('id') id: string, @CurrentUser() user: { id: string }) {
     return this.documentsService.reprocess(id, user.id);
+  }
+
+  @Post(':id/search')
+  @HttpCode(200)
+  search(
+    @Param('id') id: string,
+    @Body() dto: SearchDocumentDTO,
+    @CurrentUser() user: { id: string },
+  ) {
+    return this.documentsService.search(id, user.id, dto.question);
   }
 
   @Get()
